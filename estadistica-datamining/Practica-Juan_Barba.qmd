@@ -79,9 +79,22 @@ Hay muchos NAs, vamos a intentar crear un modelo que nos prediga cuantos son los
 
 6.  Pinta el histograma de los metros cuadrados y ver si tenemos que filtrar algún elemento más
 
+    ```{r}
+    hist(df_madrid$Square.Meters,
+         breaks = 60,
+         main = "Histogram Square.Meters Madrid Apartments",
+         xlab = "Square meters",
+         col = "grey")
+    ```
+
 ------------------------------------------------------------------------
 
 7.  Asigna el valor NA a la columna Square.Meters de los apartamentos que tengan menos de 20 m\^2
+
+    ```{r}
+    df_madrid$Square.Meters[df_madrid$Square.Meters < 20] <- NA
+    df_madrid
+    ```
 
 ------------------------------------------------------------------------
 
