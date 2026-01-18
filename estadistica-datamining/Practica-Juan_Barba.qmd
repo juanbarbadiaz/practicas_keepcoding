@@ -100,13 +100,40 @@ Hay muchos NAs, vamos a intentar crear un modelo que nos prediga cuantos son los
 
 8.  Existen varios Barrios que todas sus entradas de Square.Meters son NA, vamos a eliminar del dataset todos los pisos que pertenecen a estos barrios.
 
+    ```{r}
+
+    barrios_sin_sqm <- aggregate(Square.Meters ~ Neighbourhood,
+                                 data = df_madrid,
+                                 FUN = function(x) all(is.na(x)))
+    barrios_sin_sqm <- barrios_sin_sqm$Neighbourhood[barrios_sin_sqm$Square.Meters]
+    df_madrid <- df_madrid[!(df_madrid$Neighbourhood %in% barrios_sin_sqm), ]
+    df_madrid
+    ```
+
     ------------------------------------------------------------------------
 
 9.  ¿Tienen todos los barrios los mismos metros cuadrados de media? ¿Con que test lo comprobarías?
 
+    ```{r}
+    datos_test <- df_madrid[!is.na(df_madrid$Square.Meters), ]
+    kruskal.test(Square.Meters ~ Neighbourhood, data = datos_test)
+    ```
+
     ------------------------------------------------------------------------
 
+    El resultado p-valor \< 0.05 indica que no hay igualdad entre medias.
+
+    Utilizando Kruskal-Wallis ya que es recomendado cuando se comparan distribuciones no normales entre multiple grupos
+
 10. Vamos a agrupar los barrios por metros cuadrados. Podemos usar una matriz de similaridad de Tukey. Muestra como de similares o diferentes son los barrios si nos fijámos únicamente en los metros cuadrados de los pisos. ¿Como se diferencia la media del Barrio A al Barrio B? (Es decir, cual sería el pvalor suponiendo una H0 en la que las medias son iguales)
+
+    ```{r}
+    datos_tukey <- df_madrid[!is.na(df_madrid$Square.Meters), ]
+    modelo_aov <- aov(Square.Meters ~ Neighbourhood, data = datos_tukey)
+    tukey <- TukeyHSD(modelo_aov)
+    tukey$Neighbourhood[order(tukey$Neighbourhood[,4]), ]
+    tukey
+    ```
 
 ------------------------------------------------------------------------
 
