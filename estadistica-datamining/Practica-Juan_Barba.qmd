@@ -135,21 +135,73 @@ Hay muchos NAs, vamos a intentar crear un modelo que nos prediga cuantos son los
     tukey
     ```
 
-------------------------------------------------------------------------
+<!-- -->
 
 11. En el punto anterior has creado una matriz de p-valores que indica como de parecidos son dos barrios. Si su pvalor es bajo significa que los barrios son diferentes, si es alto significa que los barrios se parecen. Esta matriz la podemos usar como matriz de distancia si restamos el pvalor a 1. Es decir si usamos como distancia 1-pvalor. De esta forma barrios con un pvalor alto tendrán una distancia mayor que aquellos con un pvalor bajo. Usando esta última métrica como matriz de distancias dibuja un dendrograma de los diferentes barrios.
+
+    ```{r}
+    res_tukey <- tukey$Neighbourhood
+    p_values <- res_tukey[, "p adj"]
+
+    pares <- do.call(rbind, strsplit(rownames(res_tukey), "-"))
+    barrios_unicos <- unique(c(pares[,1], pares[,2]))
+
+    n <- length(barrios_unicos)
+    matriz_p <- matrix(1, nrow = n, ncol = n, 
+                       dimnames = list(barrios_unicos, barrios_unicos))
+
+    for(i in 1:nrow(pares)) {
+      b1 <- pares[i, 1]
+      b2 <- pares[i, 2]
+      p <- p_values[i]
+      
+      matriz_p[b1, b2] <- p
+      matriz_p[b2, b1] <- p
+    }
+
+    matriz_distancias <- as.dist(1 - matriz_p)
+
+    clustering <- hclust(matriz_distancias, method = "complete")
+
+    par(mar = c(10, 4, 4, 2)) # Aumentar margen inferior
+    plot(clustering, 
+         hang = -1,       # Alinea las etiquetas abajo del todo
+         cex = 0.4,       # Letra al 40% del tamaño normal
+         main = "Dendrograma Barrios",
+         xlab = "", sub = "")
+    ```
 
 ------------------------------------------------------------------------
 
 10. ¿Que punto de corte sería el aconsejable?, ¿cuantos clusters aparecen?
 
+Entre el 0.4 y 0.6 por que las lineas son mas grandes e indica estabilidad
+
+2 grandes cluster o incluso 3
+
 ------------------------------------------------------------------------
 
 11. Vamos a crear una nueva columna en el dataframe df_madrid con un nuevo identificador marcado por los clusters obtenidos. Esta columna la llamaremos neighb_id
 
+    ```{r}
+    clusters_barrios <- cutree(clustering, k = 2)
+    df_madrid$neighb_id <- clusters_barrios[as.character(df_madrid$Neighbourhood)]
+    df_madrid$neighb_id <- as.factor(df_madrid$neighb_id)
+    head(df_madrid[, c("Neighbourhood", "neighb_id")])
+    ```
+
 ------------------------------------------------------------------------
 
 12. Vamos a crear dos grupos, uno test y otro train.
+
+    ```{r}
+    indice_train <- sample(1:nrow(df_madrid), size = floor(0.8 * nrow(df_madrid)))
+    train <- df_madrid[indice_train, ]
+    test  <- df_madrid[-indice_train, ]
+    cat("Filas totales:", nrow(df_madrid), "\n")
+    cat("Filas Train (80%):", nrow(train), "\n")
+    cat("Filas Test (20%):", nrow(test), "\n")
+    ```
 
 ------------------------------------------------------------------------
 
