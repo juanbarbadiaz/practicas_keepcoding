@@ -163,10 +163,10 @@ Hay muchos NAs, vamos a intentar crear un modelo que nos prediga cuantos son los
 
     clustering <- hclust(matriz_distancias, method = "complete")
 
-    par(mar = c(10, 4, 4, 2)) # Aumentar margen inferior
+    par(mar = c(10, 4, 4, 2))
     plot(clustering, 
-         hang = -1,       # Alinea las etiquetas abajo del todo
-         cex = 0.4,       # Letra al 40% del tamaño normal
+         hang = -1,
+         cex = 0.4,
          main = "Dendrograma Barrios",
          xlab = "", sub = "")
     ```
@@ -207,16 +207,99 @@ Entre el 0.4 y 0.6 por que las lineas son mas grandes e indica estabilidad
 
 13. Tratamos de predecir los metros cuadrados en función del resto de columnas del dataframe.
 
+    ```{r}
+    #PROBADO CON Accommodates, Bathrooms
+    #CON Neighbourhood DA ERROR
+    train$Square.Feet <- NULL
+    test$Square.Feet  <- NULL
+
+    modelo_real <- lm(Square.Meters ~ ., data = train)
+    summary(modelo_real)
+
+    predicciones <- predict(modelo_real, newdata = test)
+    rmse <- sqrt(mean((test$Square.Meters - predicciones)^2))
+    cat("El error (RMSE) es:", round(rmse, 2))
+
+    plot(test$Square.Meters, predicciones, 
+         main = "Predicción vs Realidad", 
+         xlab = "Real", ylab = "Predicho", pch=19, col="blue")
+    abline(0,1, col="red")
+    ```
+
 ------------------------------------------------------------------------
 
 14. Evaluar la calidad de vuestro modelo
+
+    ```{r}
+    #calculo de mae y mape
+    residuos <- test$Square.Meters - predicciones
+    mae <- mean(abs(residuos))
+    mape <- mean(abs(residuos / test$Square.Meters)) * 100
+    cat("MAE (Desviación media):", round(mae, 2), "metros\n")
+    cat("MAPE (Error porcentual):", round(mape, 2), "%\n")
+    #par(mfrow = c(2, 2))
+    #plot(modelo)
+    #par(mfrow = c(1, 1)) 
+    #summary(modelo)
+
+    #No es un modelo bueno tiene un error de 13.61 metros que para una apartamento creo que es mucho y un MAPE de 21.65% que es esta en los limites de ser un error porcentual aceptable
+    ```
 
 ------------------------------------------------------------------------
 
 15. Si tuvieramos un anuncio de un apartamento para 6 personas (Accommodates), con 1 baño, con un precio de 80€/noche y 3 habitaciones en el barrio de Sol, con 3 camas y un review de 80. ¿Cuantos metros cuadrados tendría? Si tu modelo necesita algúna variable adicional puedes inventartela dentro del rango de valores del dataset. ¿Como varía sus metros cuadrados con cada habitación adicional?
 
+    ```{r}
+    train_nuevo <- train
+    train_nuevo$Square.Feet <- NULL 
+    train_nuevo$Neighbourhood <- NULL
+
+    modelo_final <- lm(Square.Meters ~ ., data = train_nuevo)
+    nuevo_piso <- data.frame(
+      Accommodates = 6,
+      Bathrooms = 1,
+      Bedrooms = 3,
+      Beds = 3,
+      Price = 80,
+      Review.Scores.Rating = 80,
+      neighb_id = as.factor(2), 
+      Guests.Included = 1,
+      Extra.People = 0,
+      Latitude = 40.416, 
+      Longitude = -3.703
+    )
+
+    metros_predichos <- predict(modelo_final, newdata = nuevo_piso)
+
+    cat("Según el modelo, este apartamento en Sol debería tener:", round(metros_predichos, 2), "m2\n")
+    ```
+
 ------------------------------------------------------------------------
 
 16. Rellenar los Square.Meters con valor NA con el estimado con el modelo anterior.
+
+    ```{r}
+    indices_vacios <- which(is.na(df_madrid$Square.Meters))
+    filas_problematicas <- df_madrid[indices_vacios, ]
+
+    vars_predictoras <- c("Bathrooms", "Bedrooms", "Beds", "Accommodates")
+
+    for (var in vars_predictoras) {
+      if (var %in% names(df_madrid)) {
+        mediana <- median(df_madrid[[var]], na.rm = TRUE)
+        df_madrid[is.na(df_madrid[[var]]), var] <- mediana
+      }
+    }
+
+    indices_vacios <- which(is.na(df_madrid$Square.Meters))
+    datos_para_rellenar <- df_madrid[indices_vacios, ]
+
+    valores_estimados <- predict(modelo_final, newdata = datos_para_rellenar)
+
+    df_madrid$Square.Meters[indices_vacios] <- valores_estimados
+
+    df_madrid
+
+    ```
 
 ------------------------------------------------------------------------
