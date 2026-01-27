@@ -257,7 +257,7 @@ Entre el 0.4 y 0.6 por que las lineas son mas grandes e indica estabilidad
     ```{r}
 
 
-    modelo_final <- lm(Square.Meters ~ ., data = train_nuevo)
+    modelo_final <- lm(Square.Meters ~ ., data = train)
     nuevo_piso <- data.frame(
       Accommodates = 6,
       Bathrooms = 1,
@@ -282,20 +282,24 @@ Entre el 0.4 y 0.6 por que las lineas son mas grandes e indica estabilidad
 16. Rellenar los Square.Meters con valor NA con el estimado con el modelo anterior.
 
     ```{r}
-    indices_vacios <- which(is.na(df_madrid$Square.Meters))
-    filas_problematicas <- df_madrid[indices_vacios, ]
-
-    vars_predictoras <- names(df_madrid)[sapply(df_madrid, is.numeric)]
-
-    for (var in vars_predictoras) {
-      if (var %in% names(df_madrid)) {
-        mediana <- median(df_madrid[[var]], na.rm = TRUE)
-        df_madrid[is.na(df_madrid[[var]]), var] <- mediana
-      }
-    }
 
     indices_vacios <- which(is.na(df_madrid$Square.Meters))
     datos_para_rellenar <- df_madrid[indices_vacios, ]
+
+    vars_clave <- c("Bathrooms", "Bedrooms", "Beds", "Price", 
+                    "Review.Scores.Rating", "Accommodates", "Guests.Included")
+
+    for (col in vars_clave) {
+      if (col %in% names(datos_para_rellenar)) {
+        mediana_global <- median(df_madrid[[col]], na.rm = TRUE)
+        datos_para_rellenar[[col]][is.na(datos_para_rellenar[[col]])] <- mediana_global
+      }
+    }
+
+    if ("neighb_id" %in% names(datos_para_rellenar)) {
+      moda <- names(sort(table(df_madrid$neighb_id), decreasing=TRUE))[1]
+      datos_para_rellenar$neighb_id[is.na(datos_para_rellenar$neighb_id)] <- moda
+    }
 
     valores_estimados <- predict(modelo_final, newdata = datos_para_rellenar)
 
