@@ -1,2 +1,3 @@
 Practicas Pedidas en master de IA
-- Peactica de Algebra
+- Practica de Algebra
+- Practica de Estadistica-Datamining
