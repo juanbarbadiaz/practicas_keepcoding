@@ -4,3 +4,5 @@ Practicas Pedidas en master de IA
 - Practica Data Warehouse & SQL
 - Practica Big Data Arquitectura
 - Practica Exploración y visualizacón de Datos
+- Practica Big Data Processing
+  
