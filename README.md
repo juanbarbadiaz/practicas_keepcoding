@@ -5,4 +5,5 @@ Practicas Pedidas en master de IA
 - Practica Big Data Arquitectura
 - Practica Exploración y visualizacón de Datos
 - Practica Big Data Processing
-  
+- Practica Machine Learning
+- Practica Deep Learning
