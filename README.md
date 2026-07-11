@@ -7,3 +7,4 @@ Practicas Pedidas en master de IA
 - Practica Big Data Processing
 - Practica Machine Learning
 - Practica Deep Learning
+- Practica NLP
