@@ -1,0 +1,1 @@
+He intentado hacerlo con docker pero no lo consigo. Me gustaria hacer una tutoria contigo para ver si me puedes ayudar. Gracias
