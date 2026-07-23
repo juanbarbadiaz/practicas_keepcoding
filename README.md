@@ -9,3 +9,4 @@ Practicas Pedidas en master de IA
 - Practica Deep Learning
 - Practica NLP
 - Practica mlops-llmops
+- Practica AI-Engineering
